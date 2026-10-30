@@ -1,11 +1,31 @@
-from database import guardar_ticket, obtener_tickets, obtener_ticket_por_id, actualizar_ticket, eliminar_ticket 
+from backend.database import guardar_ticket, obtener_tickets, obtener_ticket_por_id, actualizar_ticket, eliminar_ticket 
 import fastapi 
 from fastapi import HTTPException
-from ai_service import clasificar_ticket
-from database import guardar_clasificacion
+from backend.ai_service import clasificar_ticket
+from backend.database import guardar_clasificacion
 import httpx 
 
 app = fastapi.FastAPI()
+
+# Permite acceder a los endpoints tanto con /api como sin /api.
+# Conserva las rutas originales para desarrollo local.
+from fastapi.routing import APIRoute
+
+@app.on_event("startup")
+def registrar_rutas_api():
+    rutas_originales = [
+        ruta for ruta in app.routes
+        if isinstance(ruta, APIRoute) and not ruta.path.startswith("/api/")
+    ]
+
+    for ruta in rutas_originales:
+        app.add_api_route(
+            path="/api" + ruta.path,
+            endpoint=ruta.endpoint,
+            methods=list(ruta.methods),
+            include_in_schema=False,
+        )
+
 
 @app.get("/")
 def home():

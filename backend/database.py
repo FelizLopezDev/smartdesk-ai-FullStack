@@ -1,5 +1,9 @@
 import sqlite3
-DB_NAME = 'smartdesk.db'
+import os
+
+# En Vercel, SQLite usa almacenamiento temporal.
+# En desarrollo local, conserva la base de datos habitual.
+DB_NAME = "/tmp/smartdesk.db" if os.getenv("VERCEL") else "smartdesk.db"
 
 def crear_tabla():
     conexion = sqlite3.connect(DB_NAME)
